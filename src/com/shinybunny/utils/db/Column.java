@@ -1,6 +1,10 @@
 package com.shinybunny.utils.db;
 
 import com.shinybunny.utils.Name;
+import com.shinybunny.utils.db.annotations.AutoIncrement;
+import com.shinybunny.utils.db.annotations.NotNull;
+import com.shinybunny.utils.db.annotations.PrimaryKey;
+import com.shinybunny.utils.db.annotations.Unique;
 
 import java.lang.reflect.Field;
 
@@ -73,6 +77,9 @@ public class Column {
         return this;
     }
 
+    public boolean isUnique() {
+        return unique;
+    }
 
     public Column defaultValue(Object def) {
         this.defaultValue = def;
@@ -81,15 +88,6 @@ public class Column {
 
     void setType(DataType<?> type) {
         this.type = type;
-    }
-
-    @Override
-    public String toString() {
-        return name + " " + type +
-                (autoIncrement ? " AUTO_INCREMENT" : "") +
-                (nullable ? "" : " NOT NULL") +
-                (defaultValue == null ? "" : " " + DatabaseUtils.toString(defaultValue)) +
-                (unique ? " UNIQUE" : "");
     }
 
     public boolean doesAutoIncrement() {

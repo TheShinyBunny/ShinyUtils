@@ -4,7 +4,6 @@ import com.shinybunny.utils.ListUtils;
 
 import java.sql.*;
 import java.time.Year;
-import java.util.Arrays;
 
 public class DataType<T> {
 
@@ -108,7 +107,7 @@ public class DataType<T> {
         if (type == Timestamp.class) return TIMESTAMP;
         if (type == Time.class) return TIME;
         if (type == Year.class) return YEAR;
-        return null;
+        return null; // TODO: 03/08/2019 add custom serializer type
     }
     public Column named(String name) {
         return new Column(name,this);
@@ -124,7 +123,7 @@ public class DataType<T> {
 
     @Override
     public String toString() {
-        return name + (params.length > 0 ? "(" + String.join(", ",ListUtils.convertAllArray(params, Object::toString)) + ")" : "");
+        return name + (params.length > 0 ? "(" + String.join(", ",ListUtils.mapArray(params, Object::toString)) + ")" : "");
     }
 
     @FunctionalInterface

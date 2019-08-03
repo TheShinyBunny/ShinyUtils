@@ -29,29 +29,6 @@ public class ColumnSelector {
         return this;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder b = new StringBuilder();
-        if (minMax != EnumMinMax.NONE) {
-            b.append(minMax).append("(");
-        }
-        b.append(name);
-        if (minMax != EnumMinMax.NONE) {
-            b.append(')');
-        }
-        if (alias != null) {
-            b.append(" AS ").append(escape(alias));
-        }
-        return b.toString();
-    }
-
-    private static String escape(String alias) {
-        if (alias.contains(" ")) {
-            return "[" + alias + "]";
-        }
-        return alias;
-    }
-
     public enum EnumMinMax {
 
         MIN, MAX, NONE;

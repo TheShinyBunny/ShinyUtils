@@ -1,4 +1,6 @@
-package com.shinybunny.utils.db;
+package com.shinybunny.utils.db.annotations;
+
+import com.shinybunny.utils.db.Order;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

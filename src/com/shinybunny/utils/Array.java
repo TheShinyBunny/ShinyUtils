@@ -460,7 +460,7 @@ public class Array<T> implements Iterable<T> {
     /**
      * Joins the string representations of all elements ({@link #toStringAll()} by the specified <code>separator</code>
      * @param separator The string to insert between all elements.
-     * @return A string result from {@link String#join(CharSequence, CharSequence...) String.join(separator, toStringAll())}.
+     * @return A string result from {@link String#join(CharSequence, CharSequence...) String.join(separator, mapToString())}.
      */
     public String join(String separator) {
         return String.join(separator,this.toStringAll());
@@ -562,6 +562,10 @@ public class Array<T> implements Iterable<T> {
      */
     public T find(Predicate<T> cond) {
         return findOrDefault(cond,null);
+    }
+
+    public <P> T find(Function<T,P> propertyGetter, P match) {
+        return find(Lambda.propertyEquals(propertyGetter,match));
     }
 
     /**

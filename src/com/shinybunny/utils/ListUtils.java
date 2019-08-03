@@ -95,7 +95,7 @@ public class ListUtils {
      * @param <R> The type of the result {@link Collection}.
      * @return A new Collection containing all converted items using the converter function.
      */
-    public static <T,R> List<R> convertAll(Iterable<T> list, Function<T,R> converter) {
+    public static <T,R> List<R> map(Iterable<T> list, Function<T,R> converter) {
         List<R> newList = new ArrayList<>();
         for (T obj : list) {
             newList.add(converter.apply(obj));
@@ -111,8 +111,8 @@ public class ListUtils {
      * @param <R> The type of result supply of collection.
      * @return A new {@link Supplier} of a collection
      */
-    public static <T,R> Supplier<? extends Iterable<R>> convertAllSupply(Supplier<? extends Iterable<T>> listSupply, Function<T,R> converter) {
-       return () -> convertAll(listSupply.get(),converter);
+    public static <T,R> Supplier<List<R>> mapSupply(Supplier<? extends Iterable<T>> listSupply, Function<T,R> converter) {
+       return () -> map(listSupply.get(),converter);
     }
 
     /**
@@ -120,7 +120,7 @@ public class ListUtils {
      * @param list The list to convert
      * @return A new list of strings representing the objects of the original list.
      */
-    public static List<String> toStringAll(Collection<?> list) {
+    public static List<String> mapToString(Collection<?> list) {
         List<String> newList = new ArrayList<>();
         for (Object o : list) {
             newList.add(o.toString());
@@ -136,12 +136,13 @@ public class ListUtils {
      * @param <R> The type of the result collection
      * @return A new list containing all converted items.
      */
-    public static <T,R> List<R> convertAllArray(T[] arr, Function<T,R> converter) {
+    public static <T,R> R[] mapArray(T[] arr, Function<T,R> converter) {
+        R[] newArr = (R[]) new Object[arr.length];
         List<R> newList = new ArrayList<>();
         for (T obj : arr) {
             newList.add(converter.apply(obj));
         }
-        return newList;
+        return newList.toArray(newArr);
     }
 
     /**
@@ -222,7 +223,7 @@ public class ListUtils {
      * @param <T> The type of objects
      * @return A new {@link Supplier} returning a list of the items.
      */
-    public static <T> Supplier<Collection<T>> toSupply(T[] arr) {
+    public static <T> Supplier<List<T>> toSupply(T[] arr) {
         return ()->Arrays.asList(arr);
     }
 
@@ -241,20 +242,19 @@ public class ListUtils {
     }
 
     /**
-     * Does 2 things:
      * <ol>
-     *     <li>Converts the given collection to a supply</li>
+     *     <li>Converts the given list to a supply that returns that list</li>
      *     <li>Convert all items of that supply to a new supply of the result type</li>
      * </ol>
-     * @param arr
-     * @param converter
-     * @param <T>
-     * @param <R>
-     * @return
+     * @param list The original list
+     * @param converter The mapper to convert the objects
+     * @param <T> The original type
+     * @param <R> The result type
+     * @return A supplier that returns a list of the converted items
      */
-    public static <T,R> Supplier<? extends Iterable<R>> convertAndSupply(Iterable<T> arr,Function<T,R> converter) {
-        Supplier<? extends Iterable<T>> s = toSupply(arr);
-        return convertAllSupply(s,converter);
+    public static <T,R> Supplier<List<R>> mapAndSupply(Iterable<T> list, Function<T,R> converter) {
+        Supplier<? extends Iterable<T>> s = toSupply(list);
+        return mapSupply(s,converter);
     }
 
     public static <T> void printArray(T[] args) {
@@ -295,7 +295,7 @@ public class ListUtils {
     }
 
     /**
-     * Returns a random item from a list, using the WeightedRandomness algorithm.
+     * Returns a random item from a list, using the Weighted Random algorithm.
      * @param list The list of items to choose from randomly
      * @param weightGetter The function to get from each item its weight (the chance of it being chosen)
      * @param <T> The type of items
@@ -335,7 +335,7 @@ public class ListUtils {
         return Arrays.asList(enumClass.getEnumConstants());
     }
 
-    public static <T,R extends T> List<R> castAll(List<T> list, Class<R> targetClass) {
+    public static <T,R extends T> List<R> cast(List<T> list, Class<R> targetClass) {
         List<R> newList = new ArrayList<>();
         for (T obj : list) {
             newList.add(targetClass.cast(obj));
@@ -388,5 +388,13 @@ public class ListUtils {
     @SafeVarargs
     public static <T> Iterator<T> iterator(T... arr) {
         return Arrays.asList(arr).iterator();
+    }
+
+    public static <T> List<T> repeat(T obj, int times) {
+        List<T> list = new ArrayList<>();
+        for (int i = 0; i < times; i++) {
+            list.add(obj);
+        }
+        return list;
     }
 }

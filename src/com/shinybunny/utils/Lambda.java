@@ -1,5 +1,7 @@
 package com.shinybunny.utils;
 
+import com.shinybunny.utils.db.Column;
+
 import java.util.function.*;
 
 public class Lambda {
@@ -37,6 +39,9 @@ public class Lambda {
 	public static <T> Function<T, T> noChange() {
 		return t->t;
 	}
-	
-	
+
+
+	public static <T,P> Predicate<T> propertyEquals(Function<T,P> property, P obj) {
+		return t->property.apply(t).equals(obj);
+	}
 }

@@ -1,11 +1,14 @@
-package com.shinybunny.utils.db;
+package com.shinybunny.utils.db.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Makes the data model field annotated with this annotation auto increment. Works with numerical fields only.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface NotNull {
+public @interface AutoIncrement {
 }

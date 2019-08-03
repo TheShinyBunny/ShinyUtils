@@ -1,16 +1,20 @@
 package com.shinybunny.utils.db;
 
-import com.shinybunny.utils.Name;
-
 import java.lang.reflect.*;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Dal implements InvocationHandler {
 
-    private final Database db;
+    private final Class<?> dalClass;
+    private Map<Method, DalMethod> methodMap;
 
-    public Dal(Database db) {
-        this.db = db;
+    public Dal(Database<?> db, Class<?> dalClass) {
+        this.dalClass = dalClass;
+        this.methodMap = new HashMap<>();
+        for (Method m : dalClass.getDeclaredMethods()) {
+            methodMap.put(m,DalMethod.create(db,m));
+        }
     }
 
     /**
@@ -60,134 +64,6 @@ public class Dal implements InvocationHandler {
      */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Select select = method.getAnnotation(Select.class);
-        Delete delete = method.getAnnotation(Delete.class);
-        Insert insert = method.getAnnotation(Insert.class);
-        Update update = method.getAnnotation(Update.class);
-
-        if (select != null) {
-            return select(select,method,args);
-        } else if (delete != null) {
-            return delete(delete,method,args);
-        } else if (insert != null) {
-            return insert(insert,method,args);
-        } else if (update != null) {
-            return update(update,method,args);
-        }
-        return null;
-    }
-
-    private Object update(Update update, Method method, Object[] args) {
-        Object model = args[0];
-        Table table = db.getTable(model.getClass());
-        table.update(db.mapModel(model),Where.test(table.getPrimaryKey().getName(),Operator.EQUALS,db.getPrimaryKey(model)));
-        return null;
-    }
-
-    private Object insert(Insert insert, Method method, Object[] args) {
-        // TODO: 01/06/2019 insert varargs and arrays
-        Class<?> type = args[0].getClass();
-        Table table = db.getTable(type);
-        Object generated = table.insert(db.mapModel(args[0]));
-        if (generated != null) {
-            Field f = db.getPrimaryKey(type);
-            f.setAccessible(true);
-            try {
-                f.set(args[0], generated);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-    private Object delete(Delete delete, Method method, Object[] args) {
-        return null;
-    }
-
-    private Object select(Select select, Method method, Object[] args) {
-        Type model = select.model();
-        if (model == Object.class) {
-            model = method.getGenericReturnType();
-        }
-        Class<?> returnType = select.model() == Object.class ? method.getReturnType() : select.model();
-        Table table = getTable(model);
-        SelectStatement s = table.select();
-        if (!select.min().isEmpty()) {
-            s.field(Selectors.min(select.min()).as("Singleton"));
-        } else if (!select.max().isEmpty()) {
-            s.field(Selectors.max(select.max()).as("Singleton"));
-        }
-        if (select.limit() > 0) {
-            if (select.limit() > 1 && !isMultipleData(returnType)) {
-                // can't have multiple data with 1 returned data
-            }
-            s.limit(select.limit());
-        }
-        for (OrderBy o : select.orderBy()) {
-            s.orderBy(o.value(),o.dir());
-        }
-        Where.Chain chain = Where.chain();
-        for (int i = 0; i < method.getParameterCount(); i++) {
-            Parameter p = method.getParameters()[i];
-            chain.and(parameterToWhere(p,args[i]));
-        }
-        s.where(chain);
-        QueryResult result = s.execute();
-        if (isMultipleData(returnType)) {
-            if (returnType.isArray()) {
-                return result.getRows().map(r->db.buildModel(r,returnType.getComponentType())).toArray();
-            } else {
-                ParameterizedType pt = (ParameterizedType)model;
-                return result.getRows().map(r->db.buildModel(r, ((Class<?>) pt.getActualTypeArguments()[0]))).toList();
-            }
-        }
-        ResultRow row = result.first();
-        if (row.contains("Singleton")) {
-            return row.get("Singleton",Double.TYPE);
-        }
-        return db.buildModel(row, returnType);
-    }
-
-    private Where parameterToWhere(Parameter p, Object value) {
-        String name = Name.Helper.getName(p);
-        if (!p.isNamePresent() && !p.isAnnotationPresent(Name.class)) {
-
-        }
-        Compare comp = p.getAnnotation(Compare.class);
-        Operator op = Operator.EQUALS;
-        if (comp != null) {
-            op = comp.value();
-        }
-        return Where.test(name,op,value);
-    }
-
-    private boolean isMultipleData(Class<?> type) {
-        return Collection.class.isAssignableFrom(type) || type.isArray();
-    }
-
-    private Table getTable(Type type) {
-        Class<?> model = getActualModel(type);
-        if (model == null) {
-
-        }
-        Table table = db.getTable(model);
-        if (table == null) {
-            // not a data model
-        }
-        return table;
-    }
-
-    private Class<?> getActualModel(Type type) {
-        if (type instanceof ParameterizedType) {
-            if (Collection.class.isAssignableFrom((Class<?>) ((ParameterizedType)type).getRawType())) {
-                return (Class<?>) ((ParameterizedType) type).getActualTypeArguments()[0];
-            }
-            return null;
-        }
-        if (((Class<?>)type).isArray()) {
-            return ((Class<?>) type).getComponentType();
-        }
-        return (Class<?>) type;
+        return methodMap.get(method).invoke(args);
     }
 }

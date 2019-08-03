@@ -1,28 +1,25 @@
-package com.shinybunny.utils.db.providers;
+package com.shinybunny.utils.db.mysql;
 
 import com.mysql.cj.jdbc.Driver;
-import com.shinybunny.utils.Array;
-import com.shinybunny.utils.db.Database;
+import com.shinybunny.utils.db.DatabaseProvider;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 public class MySQLProvider extends DatabaseProvider {
 
+    public static final String URL_FORMAT = "jdbc:mysql://%s:%d/%s";
     private String host;
     private String username;
     private String password;
     private int port;
-
-    private Array<Database> databases;
 
     public MySQLProvider(String host, String username, String password, int port) {
         this.host = host;
         this.username = username;
         this.password = password;
         this.port = port;
-        this.databases = new Array<>();
     }
 
     @Override
@@ -36,7 +33,12 @@ public class MySQLProvider extends DatabaseProvider {
 
     @Override
     public MySQLDatabase getDatabase(String name) {
-        return new MySQLDatabase(this,name);
+        try {
+            Connection conn = DriverManager.getConnection(String.format(URL_FORMAT, host, port, name),username,password);
+            return new MySQLDatabase(this,name,conn);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

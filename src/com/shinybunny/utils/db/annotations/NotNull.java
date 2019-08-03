@@ -1,4 +1,4 @@
-package com.shinybunny.utils.db;
+package com.shinybunny.utils.db.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,7 +6,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Update {
-
+@Target(ElementType.FIELD)
+public @interface NotNull {
 }

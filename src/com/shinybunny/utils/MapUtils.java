@@ -1,5 +1,6 @@
 package com.shinybunny.utils;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -27,5 +28,14 @@ public class MapUtils {
 
     public static String join(String separator, Map<?,?> data, Function<Object, String> toString) {
         return data.entrySet().stream().map(e->e.getKey() + "=" + toString.apply(e.getValue())).collect(Collectors.joining(separator));
+    }
+
+    public static <K, V> K getKey(Map<K, V> map, V value) {
+        for (Map.Entry<K,V> e : map.entrySet()) {
+            if (e.getValue().equals(value)) {
+                return e.getKey();
+            }
+        }
+        return null;
     }
 }

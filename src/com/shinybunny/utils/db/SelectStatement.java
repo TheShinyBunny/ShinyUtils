@@ -30,7 +30,7 @@ public class SelectStatement {
     }
 
     public SelectStatement columns(String... columns) {
-        this.selectors.addAll(ListUtils.convertAllArray(columns, Selectors::column));
+        this.selectors.addAll(ListUtils.mapArray(columns, Selectors::column));
         return this;
     }
 
@@ -48,40 +48,23 @@ public class SelectStatement {
         this.limit = limit;
     }
 
-    public QueryResult execute() {
-        return table.getDatabase().query(toString());
+    public Array<ColumnSelector> getSelectors() {
+        return selectors;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder b = new StringBuilder("SELECT ");
-        if (selectors.isEmpty()) {
-            b.append("*");
-        } else {
-            b.append(selectors.join(", "));
-        }
-        b.append(" FROM " + table);
-        if (where != null) {
-            String w = where.toString();
-            if (!w.isEmpty()) b.append(" WHERE " + w);
-        }
-        if (limit != 0) {
-            b.append(" LIMIT " + limit);
-        }
-        if (!orderBy.isEmpty()) {
-            b.append(" ORDER BY");
-            boolean comma = true;
-            for (Map.Entry<String,Order> e : orderBy.entrySet()) {
-                b.append(" " + e.getKey());
-                if (e.getValue() != Order.ARBITRARY) {
-                    b.append(" " + e.getValue());
-                }
-                if (comma) {
-                    b.append(',');
-                    comma = false;
-                }
-            }
-        }
-        return b.toString();
+    public int getLimit() {
+        return limit;
+    }
+
+    public Map<String, Order> getOrderBy() {
+        return orderBy;
+    }
+
+    public Where getWhere() {
+        return where;
+    }
+
+    public QueryResult execute() {
+        return table.getDatabase().select(this);
     }
 }

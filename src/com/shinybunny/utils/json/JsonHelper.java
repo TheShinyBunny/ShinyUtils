@@ -156,7 +156,7 @@ public class JsonHelper {
         }
         if (Collection.class.isAssignableFrom(obj.getClass())) {
             System.out.println("creating json array from " + obj);
-            return new JsonArray(this, ListUtils.convertAll((Iterable<?>)obj,this::from));
+            return new JsonArray(this, ListUtils.map((Iterable<?>)obj,this::from));
         }
         if (Map.class.isAssignableFrom(obj.getClass())) {
             Json json = newObject();

@@ -1,10 +1,9 @@
 package com.shinybunny.utils.db;
 
 import com.shinybunny.utils.Array;
-import com.shinybunny.utils.StringUtils;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Table {
@@ -18,7 +17,7 @@ public class Table {
         this.db = db;
         this.name = name;
         columns = builder.cols;
-        primaryKey = builder.primaryKey;
+        primaryKey = builder.cols.find(Column::isPrimaryKey,true);
     }
 
     public Table(Database db, String name, SelectStatement as) {
@@ -58,24 +57,16 @@ public class Table {
 
     }
 
-    public void addCheck(String name, Where condition) {
-
-    }
-
-    public void removeCheck(String name) {
-
-    }
-
     public void remove() {
         db.removeTable(this);
     }
 
     public void addColumn(Column column) {
-
+        db.addColumn(this,column);
     }
 
     public void removeColumn(String name) {
-
+        db.removeColumn(this,getColumn(name));
     }
 
     public void setDataType(Column col, DataType<?> type) {
@@ -87,7 +78,7 @@ public class Table {
     }
 
     public Column getColumn(String name) {
-        return columns.find(c->c.getName().equals(name));
+        return columns.find(Column::getName,name);
     }
 
     public SelectStatement select() {
@@ -102,7 +93,6 @@ public class Table {
 
         private final Database db;
         private Array<Column> cols = new Array<>();
-        private Column primaryKey;
         private Map<String, Where> checks = new HashMap<>();
 
         public Builder(Database db) {
@@ -114,8 +104,8 @@ public class Table {
             return this;
         }
 
-        public Builder primaryKey(String colName) {
-            this.primaryKey = cols.find(c->c.getName().equals(colName));
+        public Builder columns(List<Column> cols) {
+            this.cols.addAll(cols);
             return this;
         }
 
@@ -131,6 +121,8 @@ public class Table {
         public Table create(String name) {
             return new Table(db,name,this).create();
         }
+
+
     }
 
 

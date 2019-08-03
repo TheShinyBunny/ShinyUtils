@@ -2,6 +2,8 @@ package com.shinybunny.utils.db;
 
 import com.shinybunny.utils.ExceptionFactory;
 import com.shinybunny.utils.Name;
+import com.shinybunny.utils.db.annotations.DataModel;
+import com.shinybunny.utils.db.annotations.PrimaryKey;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

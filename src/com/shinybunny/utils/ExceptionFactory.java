@@ -41,7 +41,7 @@ public class ExceptionFactory {
         return this;
     }
 
-    public <T> ExceptionFactory lazyEval(String argName, Function<ArgumentGetter,Object> function) {
+    public ExceptionFactory lazyEval(String argName, Function<ArgumentGetter,Object> function) {
         this.lazyEvals.put(argName,function);
         return this;
     }
@@ -78,8 +78,16 @@ public class ExceptionFactory {
         return constructor.create(this,params);
     }
 
-    public static ExceptionFactory make(String msg, String... params) {
-        return new ExceptionFactory(msg,ResultException::new,params);
+    /**
+     * Constructs a new ExceptionFactory with the specified message. Use the pattern ${name} in the message to add arguments.<br/>
+     * Those arguments can be later bound by passing their values in chronological order in the {@link #create(Object...)} method,
+     * or by their name in {@link ResultException#set(String, Object)}
+     * @param msg The message to use in the exception
+     * @param fields (Optional) fields for detailed parameters (will be added in new lines after the main message). Bind them to values later using {@link ResultException#set(String, Object)}.
+     * @return A new Exception factory for future use.
+     */
+    public static ExceptionFactory make(String msg, String... fields) {
+        return new ExceptionFactory(msg,ResultException::new,fields);
     }
 
     public static class ResultException extends RuntimeException {

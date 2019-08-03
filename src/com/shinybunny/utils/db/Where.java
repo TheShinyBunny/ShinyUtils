@@ -2,20 +2,34 @@ package com.shinybunny.utils.db;
 
 public class Where {
 
-    public static final Where ANYTHING = new Where("");
-    protected String str;
 
-    public Where(String s) {
-        this.str = s;
+    private Where first;
+    private BoolOperator operator;
+    private Where second;
+
+    public Where(Where first, BoolOperator operator, Where second) {
+        this.first = first;
+        this.operator = operator;
+        this.second = second;
+    }
+
+    protected Where() {
     }
 
     public static Chain chain() {
         return new Chain();
     }
 
-    @Override
-    public String toString() {
-        return str;
+    public Where getFirst() {
+        return first;
+    }
+
+    public Where getSecond() {
+        return second;
+    }
+
+    public BoolOperator getBoolOperator() {
+        return operator;
     }
 
     public static Where and(Where w1, Where w2) {
@@ -27,18 +41,18 @@ public class Where {
     }
 
     private static Where merge(Where w1, BoolOperator operator, Where w2) {
-        return new Where("(" + w1 + ") " + operator + " (" + w2 + ")");
+        return new Where(w1,operator,w2);
+    }
+
+    public static Where equals(String column, Object value) {
+        return test(column,Operator.EQUALS,value);
     }
 
     public static Where test(String column, Operator op, Object value) {
-        return new Where(op.toString(column,value));
+        return new Comparison(column,op,value);
     }
 
-    public static Where from(String s) {
-        return new Where(s);
-    }
-
-    public static class Chain extends Where {
+    public static class Chain {
 
         private Chain next;
         private Chain cursor = this;
@@ -46,7 +60,7 @@ public class Where {
         private BoolOperator bop;
 
         public Chain() {
-            super("");
+            super();
         }
 
         public Chain and(Where value) {
@@ -64,14 +78,6 @@ public class Where {
             cursor.next = c;
             cursor = c;
             return this;
-        }
-
-        @Override
-        public String toString() {
-            if (str.isEmpty()) {
-                str = build().toString();
-            }
-            return str;
         }
 
         public Where build() {

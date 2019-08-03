@@ -113,7 +113,7 @@ public class File extends AbstractFile {
     }
 
     public File getRelative(String fileName) {
-        return getParent().file(fileName);
+        return getParent().subFile(fileName);
     }
 
     @Override

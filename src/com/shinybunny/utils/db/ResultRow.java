@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class ResultRow {
 
@@ -25,7 +26,15 @@ public class ResultRow {
         return type.cast(data.get(column));
     }
 
+    public Object get(String column) {
+        return data.get(column);
+    }
+
     public boolean contains(String column) {
         return data.containsKey(column);
+    }
+
+    public Set<String> keys() {
+        return data.keySet();
     }
 }
