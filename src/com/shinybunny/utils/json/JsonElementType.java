@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 public class JsonElementType<T> {
     public static final JsonElementType<Json> OBJECT = new JsonElementType<>("JsonObject",json-> "{" + json.getEntries().entrySet().stream().map(e->"\"" + e.getKey() + "\": " + e.getValue().getType().toString(e.getValue(),true)).collect(Collectors.joining(", ")) + "}");
-    public static final JsonElementType<JsonArray> ARRAY = new JsonElementType<>("JsonArray",json -> "[" + json.values().stream().map(Json::toString).collect(Collectors.joining(", ")) + "]");
+    public static final JsonElementType<JsonArray> ARRAY = new JsonElementType<>("JsonArray",json -> "[" + json.values().join(",") + "]");
     public static final JsonElementType<Integer> INT = new JsonElementType<>("JsonInt");
     public static final JsonElementType<Double> DOUBLE = new JsonElementType<>("JsonDouble");
     public static final JsonElementType<String> STRING = new JsonElementType<>("JsonString");

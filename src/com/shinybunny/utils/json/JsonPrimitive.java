@@ -39,7 +39,7 @@ public class JsonPrimitive extends Json {
         if (type == JsonElementType.INT) return (int)value;
         if (type == JsonElementType.DOUBLE) return (int)(double)value;
         if (type == JsonElementType.BOOLEAN) return (boolean)value ? 1 : 0;
-        return toString().length();
+        return toNormalString().length();
     }
 
     @Override
@@ -50,7 +50,7 @@ public class JsonPrimitive extends Json {
         }
         if (type == JsonElementType.INT) return toInt() != 0;
         if (type == JsonElementType.DOUBLE) return toDouble() != 0;
-        return !toString().isEmpty();
+        return !toNormalString().isEmpty();
     }
 
     @Override
@@ -58,6 +58,11 @@ public class JsonPrimitive extends Json {
         if (type == JsonElementType.DOUBLE) return (double)value;
         if (type == JsonElementType.INT) return (double)(int)value;
         if (type == JsonElementType.BOOLEAN) return (boolean)value ? 1 : 0;
-        return toString().length();
+        return toNormalString().length();
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        return true;
     }
 }

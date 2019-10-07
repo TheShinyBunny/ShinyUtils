@@ -44,7 +44,7 @@ public abstract class DalMethod<A extends Annotation> {
     }
 
     protected final A annotation;
-    protected Database<?> database;
+    protected Database database;
     protected Method method;
     public Model model;
 
@@ -54,7 +54,7 @@ public abstract class DalMethod<A extends Annotation> {
      * @param method The actual method instance this handler is implementing
      * @param annotation The annotation instance that made the dal use this method.
      */
-    public DalMethod(Database<?> database, Method method, A annotation) {
+    public DalMethod(Database database, Method method, A annotation) {
         this.database = database;
         this.method = method;
         this.annotation = annotation;
@@ -93,7 +93,7 @@ public abstract class DalMethod<A extends Annotation> {
      */
     public abstract Object invoke(Object[] args);
 
-    public static DalMethod<?> create(Database<?> db, Method m) {
+    public static DalMethod<?> create(Database db, Method m) {
         for (MethodEntry<?> e : dalMethods) {
             DalMethod<?> dm = e.construct(db,m);
             if (dm != null) return dm;
@@ -112,7 +112,7 @@ public abstract class DalMethod<A extends Annotation> {
             this.constructor = constructor;
         }
 
-        public DalMethod<A> construct(Database<?> db, Method m) {
+        public DalMethod<A> construct(Database db, Method m) {
             A a = m.getAnnotation(annotationType);
             if (a == null) return null;
             DalMethod<A> dm = constructor.construct(db,m,a);
@@ -125,7 +125,7 @@ public abstract class DalMethod<A extends Annotation> {
     @FunctionalInterface
     public interface Constructor<A extends Annotation> {
 
-        DalMethod<A> construct(Database<?> db, Method m, A annotation);
+        DalMethod<A> construct(Database db, Method m, A annotation);
 
     }
 }

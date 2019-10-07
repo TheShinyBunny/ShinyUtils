@@ -22,7 +22,7 @@ public @interface Update {
         private final Parameter param;
         private DataSetType dataSetType;
 
-        public Handler(Database<?> database, Method method, Update annotation) {
+        public Handler(Database database, Method method, Update annotation) {
             super(database, method, annotation);
             this.param = method.getParameters()[0];
             this.dataSetType = DataSetType.infer(database,param.getType(),param.getParameterizedType());

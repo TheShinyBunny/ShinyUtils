@@ -16,9 +16,9 @@ public class Randomizer {
     }
 
     public static int range(int min, int max) {
-        min = Math.min(min,max);
-        max = Math.max(min,max);
-        return RANDOM.nextInt(max - min + 1) + min;
+        int min2 = Math.min(min,max);
+        int max2 = Math.max(min,max);
+        return RANDOM.nextInt(max2 - min2 + 1) + min2;
     }
 
     public static <T> T fromArray(T[] arr) {

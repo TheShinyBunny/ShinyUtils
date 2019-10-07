@@ -1,34 +1,38 @@
 package com.shinybunny.utils.json;
 
+import com.shinybunny.utils.Array;
+import com.shinybunny.utils.IBasicArray;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 
-public class JsonArray extends Json implements Iterable<Json> {
+public class JsonArray extends Json implements IBasicArray<Json> {
 
-    private List<Json> elements;
+    private Array<Json> elements;
 
-    public JsonArray(JsonHelper helper, List<Json> elements) {
+    public JsonArray(JsonHelper helper, Array<Json> elements) {
         super(helper);
         this.elements = elements;
     }
 
     public JsonArray(JsonHelper helper) {
-        this(helper,new ArrayList<>());
+        this(helper,new Array<>());
     }
 
     public JsonArray() {
-
+        elements = new Array<>();
     }
 
     public void add(Object obj) {
         elements.add(Json.of(helper,obj));
     }
 
-    public void set(int index, Object obj) {
+    public Json set(int index, Object obj) {
+        Json prev = elements.get(index);
         elements.set(index,Json.of(helper,obj));
+        return prev;
     }
 
     @Override
@@ -47,35 +51,20 @@ public class JsonArray extends Json implements Iterable<Json> {
     }
 
     @Override
-    public Collection<Json> values() {
+    public Array<Json> values() {
         return elements;
     }
 
     public int size() {
-        return elements.size();
-    }
-
-    @Override
-    public Object getValue() {
-        return elements;
+        return elements.length();
     }
 
 
     public <T> List<T> map(Function<Json, T> mapper) {
         List<T> list = new ArrayList<>();
-        for (Json j : this) {
+        for (Json j : this.values()) {
             list.add(mapper.apply(j));
         }
         return list;
-    }
-
-    /**
-     * Returns an iterator over elements of type {@code T}.
-     *
-     * @return an Iterator.
-     */
-    @Override
-    public Iterator<Json> iterator() {
-        return elements.iterator();
     }
 }

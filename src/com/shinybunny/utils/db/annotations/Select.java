@@ -56,7 +56,7 @@ public @interface Select {
         private IntKeyMap<Pair<String, Compare>> compareMap = new IntKeyMap<>();
         private DataSetType resultType;
 
-        public Handler(Database<?> database, Method method, Select annotation) {
+        public Handler(Database database, Method method, Select annotation) {
             super(database, method, annotation);
             this.resultType = DataSetType.infer(database,method.getReturnType(),method.getGenericReturnType());
         }

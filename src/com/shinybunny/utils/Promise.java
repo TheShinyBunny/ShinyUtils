@@ -14,6 +14,10 @@ public class Promise<T> {
         this.task = task;
     }
 
+    public Promise(T literal) {
+        this((s,f)->s.accept(literal));
+    }
+
     public static Promise<Array<?>> all(Promise<?>... promises) {
         return new Promise<>((success, fail) -> {
             Iterator<Promise<?>> iterator = ListUtils.iterator(promises);
@@ -45,6 +49,7 @@ public class Promise<T> {
 
     private void start() {
         if (started) return;
+        started = true;
         new Thread(()->{
             try {
                 task.run((res) -> {

@@ -1,73 +1,40 @@
 package com.shinybunny.utils.fs;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.shinybunny.utils.Array;
 
 public class Folder extends AbstractFile {
-
-    Folder(Folder parent, String name) {
-        this(parent.path, name);
-    }
-
-    Folder(String path, String name) {
-        this(path + "/" + name);
-    }
-
-    Folder(String fullName) {
-        this(new java.io.File(fullName));
-    }
-
-    Folder(java.io.File handle) {
+    public Folder(java.io.File handle) {
         super(handle);
     }
 
-    @Override
-    public Folder create() {
-        return (Folder) super.create();
+    public Folder(String name) {
+        super(new java.io.File(name));
     }
 
     @Override
-    protected void create(java.io.File handle) {
+    protected void create() {
         handle.mkdirs();
     }
 
-    public File subFile(String name, String extension) {
-        return subFile(name + "." + extension);
+    @Override
+    protected boolean delete(int unused) {
+        children().forEach(AbstractFile::delete);
+        return handle.delete();
     }
 
-    public File subFile(String name) {
-        return FileExplorer.getFile(this,name);
+    public Array<AbstractFile> children() {
+        return Array.of(handle.listFiles()).map(AbstractFile::of);
     }
 
-    public Folder subFolder(String name) {
-        return FileExplorer.getFolder(this,name);
+    public static Folder of(String name) {
+        return new Folder(name);
     }
 
-    public List<Folder> getSubFolders() {
-        List<Folder> folders = new ArrayList<>();
-        for (java.io.File f : handle.listFiles()) {
-            if (f.isDirectory()) {
-                folders.add(FileExplorer.getFolder(f));
-            }
-        }
-        return folders;
+    public static Folder of(java.io.File file) {
+        return new Folder(file);
     }
 
-    public List<File> getSubFiles() {
-        List<File> files = new ArrayList<>();
-        for (java.io.File f : handle.listFiles()) {
-            if (f.isFile()) {
-                files.add(FileExplorer.getFile(f));
-            }
-        }
-        return files;
-    }
-
-    public List<AbstractFile> getChildren() {
-        List<AbstractFile> children = new ArrayList<>();
-        for (java.io.File f : handle.listFiles()) {
-            children.add(FileExplorer.getAbstractFile(f));
-        }
-        return children;
+    public File child(String name) {
+        return new File(this,name);
     }
 }

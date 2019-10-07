@@ -2,6 +2,8 @@ package com.shinybunny.utils;
 
 import java.util.*;
 import java.util.function.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Represents an array of objects, now with more operations and methods!<br/>
@@ -76,6 +78,8 @@ public class Array<T> implements Iterable<T> {
         this(values);
         this.oobe = outOfBoundsException;
     }
+
+
     //</editor-fold>
 
     //<editor-fold desc="Private Helpers">
@@ -110,6 +114,14 @@ public class Array<T> implements Iterable<T> {
         return new Array<>(items);
     }
 
+    public static <T> Array<T> empty() {
+        return new Array<>();
+    }
+
+    public static <T> Array<T> fromStream(Stream<T> stream) {
+        return new Array<>(stream.toArray()).cast();
+    }
+
     public boolean isInRange(int index) {
         return index >= 0 && index < length;
     }
@@ -134,7 +146,7 @@ public class Array<T> implements Iterable<T> {
         return oobe;
     }
 
-    public Class<T> getItemsType() {
+    public Class<T> getItemType() {
         return (Class<T>) data.getClass().getComponentType();
     }
     //</editor-fold>
@@ -436,7 +448,7 @@ public class Array<T> implements Iterable<T> {
     }
 
     public T[] toArray() {
-        T[] arr = (T[]) java.lang.reflect.Array.newInstance(getItemsType(),length);
+        T[] arr = (T[]) java.lang.reflect.Array.newInstance(getItemType(),length);
         if (length >= 0) System.arraycopy(data, 0, arr, 0, length);
         return arr;
     }
@@ -732,6 +744,10 @@ public class Array<T> implements Iterable<T> {
             }
         }
         return true;
+    }
+
+    public <N> Array<N> cast() {
+        return map(i->(N)i);
     }
 
     public void print() {

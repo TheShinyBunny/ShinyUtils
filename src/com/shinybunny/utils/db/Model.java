@@ -86,7 +86,7 @@ public class Model {
                 }
                 return ListUtils.cast(list,modelClass);
             case ARRAY:
-                return ListUtils.map(result.getRows(),this::deserialize).toArray();
+                return result.getRows().map(this::deserialize).toArray();
         }
         return null;
     }

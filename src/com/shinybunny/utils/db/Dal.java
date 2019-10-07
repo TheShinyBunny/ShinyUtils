@@ -9,7 +9,7 @@ public class Dal implements InvocationHandler {
     private final Class<?> dalClass;
     private Map<Method, DalMethod> methodMap;
 
-    public Dal(Database<?> db, Class<?> dalClass) {
+    public Dal(Database db, Class<?> dalClass) {
         this.dalClass = dalClass;
         this.methodMap = new HashMap<>();
         for (Method m : dalClass.getDeclaredMethods()) {

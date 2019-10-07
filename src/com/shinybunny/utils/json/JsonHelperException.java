@@ -1,8 +1,6 @@
 package com.shinybunny.utils.json;
 
 import com.shinybunny.utils.ExceptionFactory;
-import com.shinybunny.utils.db.Table;
-import com.shinybunny.utils.fs.File;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -17,12 +15,12 @@ public class JsonHelperException extends ExceptionFactory.ResultException {
     public static final ExceptionFactory ELEMENT_IS_NOT_ARRAY = create("Element ${json} was expected to be an array");
     public static final ExceptionFactory ARRAY_INDEX_OUT_OF_BOUNDS = create("Index ${index} in array ${arr} is out of bounds.");
     public static final ExceptionFactory ELEMENT_IS_NOT_OBJECT = create("Element ${json} was expected to be a json object");
-    public static final ExceptionFactory OBJECT_NOT_ADAPTABLE = create("Object ${obj} of type ${type} has no adapter!").lazyEval("type",args->args.get("obj",Object.class).getClass().getName());
     public static final ExceptionFactory DESERIALIZATION_ERROR = create("An error occurred while deserializing json ${json} to type ${type}");
     public static final ExceptionFactory SERIALIZATION_ERROR = create("An error occurred while serializing type ${type}");
     public static final ExceptionFactory INVALID_ENUM_EXCEPTION = create("Invalid enum provided: ${value}. Expected one of ${elements}").convert("elements",(e)-> Arrays.toString((Object[])e));
     public static final ExceptionFactory COULD_NOT_DESERIALIZE = create("Could not deserialize json ${json} to type ${type}");
     public static final ExceptionFactory COULD_NOT_SERIALIZE = create("Could not serialize object ${obj} of type ${type}");
+    public static final ExceptionFactory OBJECT_NOT_SERIALIZABLE = create("Object ${obj} of type ${type} has no adapter and is not annotated with @JsonAdaptable.").lazyEval("type",args->args.get("obj",Object.class).getClass().getName());
 
     public JsonHelperException(ExceptionFactory factory, Map<String, Object> params) {
         super(factory, params);

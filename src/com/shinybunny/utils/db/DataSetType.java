@@ -15,7 +15,7 @@ public enum DataSetType {
 
     private static final ExceptionFactory RAW_COLLECTION_EXCEPTION = make("Dal data set type ${type} is a Collection with no type parameters!");
 
-    public static DataSetType infer(Database<?> db, Class<?> type, Type genericType) {
+    public static DataSetType infer(Database db, Class<?> type, Type genericType) {
         if (db.getModel(type) == null) {
             if (Collection.class.isAssignableFrom(type)) {
                 if (genericType instanceof ParameterizedType) {

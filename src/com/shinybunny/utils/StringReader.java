@@ -1,7 +1,5 @@
 package com.shinybunny.utils;
 
-import com.shinybunny.utils.fs.File;
-
 import java.util.Stack;
 import java.util.function.Predicate;
 
@@ -228,11 +226,11 @@ public class StringReader {
     public Number tryReadNumber() {
         savePos();
         try {
-            return readDouble();
+            return readInt();
         } catch (Exception e) {
             resave();
             try {
-                return readInt();
+                return readDouble();
             } catch (Exception e2) {
                 restore();
                 return null;

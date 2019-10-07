@@ -1,8 +1,5 @@
 package com.shinybunny.utils.db;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,16 +7,8 @@ public class ResultRow {
 
     private Map<String,Object> data;
 
-    public ResultRow(ResultSet set) {
-        this.data = new HashMap<>();
-        try {
-            for (int i = 1; i <= set.getMetaData().getColumnCount(); i++) {
-                String name = set.getMetaData().getColumnName(i);
-                data.put(name,set.getObject(i));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public ResultRow(Map<String,Object> data) {
+        this.data = data;
     }
 
     public <T> T get(String column, Class<T> type) {

@@ -6,21 +6,22 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class Database<P extends DatabaseProvider> {
+public abstract class Database {
 
-    private P provider;
+    private DatabaseProvider provider;
     public final String name;
     private Array<Table> tables;
     private Map<Class<?>, Model> models;
 
-    public Database(P provider, String name) {
+    public Database(DatabaseProvider provider, String name) {
         this.provider = provider;
         this.name = name;
         this.tables = new Array<>();
         this.models = new HashMap<>();
+        this.provider.databases.add(this);
     }
 
-    public P getProvider() {
+    public DatabaseProvider getProvider() {
         return provider;
     }
 

@@ -10,10 +10,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MySQLDatabase extends Database<MySQLProvider> {
+public class MySQLDatabase extends Database {
 
     private static final SQLCommand INSERT_COMMAND = SQLCommand.create("INSERT INTO {table} [({columns})] VALUES ({values})");
     private static final SQLCommand SELECT_COMMAND = SQLCommand.create("SELECT {columns} FROM {table} [WHERE {where}] [ORDER BY {order}] [LIMIT {limit}]");
@@ -60,7 +61,21 @@ public class MySQLDatabase extends Database<MySQLProvider> {
                 .prepare(connection,params);
         try {
             ResultSet set = statement.executeQuery();
-            return new QueryResult(set);
+            int columnCount = set.getMetaData().getColumnCount();
+            List<ResultRow> rows = new ArrayList<>();
+            try {
+                while (set.next()) {
+                    Map<String,Object> data = new HashMap<>();
+                    for (int i = 1; i <= columnCount; i++) {
+                        String name = set.getMetaData().getColumnName(i);
+                        data.put(name,set.getObject(i));
+                    }
+                    rows.add(new ResultRow(data));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return new QueryResult(rows);
         } catch (SQLException e) {
             e.printStackTrace();
         }

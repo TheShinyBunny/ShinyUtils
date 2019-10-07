@@ -1,12 +1,16 @@
 package com.shinybunny.utils.db.mysql;
 
 import com.mysql.cj.jdbc.Driver;
+import com.shinybunny.utils.db.Database;
 import com.shinybunny.utils.db.DatabaseProvider;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+/**
+ * A DatabaseProvider for a MySQL host. This provider connects to the JDBC MySQL provider.
+ */
 public class MySQLProvider extends DatabaseProvider {
 
     public static final String URL_FORMAT = "jdbc:mysql://%s:%d/%s";
@@ -32,7 +36,9 @@ public class MySQLProvider extends DatabaseProvider {
     }
 
     @Override
-    public MySQLDatabase getDatabase(String name) {
+    public Database getNewDatabase(String name) {
+        Database db = databases.find(Database::getName,name);
+        if (db != null) return db;
         try {
             Connection conn = DriverManager.getConnection(String.format(URL_FORMAT, host, port, name),username,password);
             return new MySQLDatabase(this,name,conn);

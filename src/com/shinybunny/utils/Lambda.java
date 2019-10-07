@@ -1,7 +1,5 @@
 package com.shinybunny.utils;
 
-import com.shinybunny.utils.db.Column;
-
 import java.util.function.*;
 
 public class Lambda {

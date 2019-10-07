@@ -1,7 +1,10 @@
 package com.shinybunny.utils;
 
+import com.shinybunny.utils.json.Json;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,5 +40,13 @@ public class MapUtils {
             }
         }
         return null;
+    }
+
+    public static <K, V, R> Array<R> remap(Map<K,V> map, Function<Map.Entry<K,V>,R> mapper) {
+        Array<R> arr = new Array<>();
+        for (Map.Entry<K,V> e : map.entrySet()) {
+            arr.add(mapper.apply(e));
+        }
+        return arr;
     }
 }

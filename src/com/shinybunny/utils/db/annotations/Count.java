@@ -31,7 +31,7 @@ public @interface Count {
 
         private final Select.Handler select;
 
-        public Handler(Database<?> database, Method method, Count annotation) {
+        public Handler(Database database, Method method, Count annotation) {
             super(database, method, annotation);
             select = new Select.Handler(database,method,annotation.query());
             select.model = database.getModel(annotation.value());

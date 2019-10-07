@@ -1,124 +1,93 @@
 package com.shinybunny.utils.fs;
 
-import com.shinybunny.utils.LineReader;
-import com.shinybunny.utils.StringReader;
+import com.shinybunny.utils.Array;
+import com.shinybunny.utils.Check;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class File extends AbstractFile {
-
-    private String extension;
-
-    File(Folder parent, String name) {
-        this(parent.path, name);
-    }
-
-    File(String path, String name) {
-        this(path + "/" + name);
-    }
-
-    File(String fullName) {
-        this(new java.io.File(fullName));
-    }
-
-    File(java.io.File handle) {
+    public File(java.io.File handle) {
         super(handle);
-        this.extension = handle.getName().substring(handle.getName().lastIndexOf('.') + 1);
     }
 
-    public static File of(String path) {
-        return FileExplorer.getFile(path, false);
+    public File(Folder parent, String name) {
+        super(new java.io.File(parent.handle,name));
     }
 
-    public static File getOrCreate(String path) {
-        return FileExplorer.getFile(path, true);
+    public File(String name) {
+        super(new java.io.File(name));
     }
 
-    public static File from(java.io.File ioFile) {
-        return FileExplorer.getFile(ioFile);
-    }
 
-    public static File of(Folder parent, String name) {
-        return FileExplorer.getFile(parent,name);
-    }
 
     @Override
-    public File create() {
-        return (File) super.create();
-    }
-
-    @Override
-    protected void create(java.io.File handle) {
+    protected void create() {
         try {
             handle.createNewFile();
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public StringReader read() {
-        return StringReader.of(this);
-    }
-
-    public LineReader readLines() {
-        return new LineReader(getLines());
-    }
-
-
-
-    public String getExtension() {
-        return extension;
-    }
-
-    public String getNameAndExtension() {
-        return name + "." + extension;
-    }
-
-    public List<String> getLines() {
-        BufferedReader reader = getReader();
-        List<String> lines = new ArrayList<>();
-        try {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-            }
-        } catch (IOException e) {
             e.printStackTrace();
         }
-        return lines;
-    }
-
-    public String getContent() {
-        BufferedReader reader = getReader();
-        StringBuilder b = new StringBuilder();
-        try {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                b.append(line).append('\n');
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return b.toString();
-    }
-
-    public BufferedReader getReader() {
-        try {
-            return new BufferedReader(new FileReader(handle));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public File getRelative(String fileName) {
-        return getParent().subFile(fileName);
     }
 
     @Override
-    public String getFullName() {
-        return super.getFullName() + "." + extension;
+    protected boolean delete(int unused) {
+        return handle.delete();
     }
 
+    public String getContent() {
+        return lines().join("\n");
+    }
+
+    private Array<String> lines() {
+        try (BufferedReader r = Check.notNull(createReader(),"buffered reader of " + this)) {
+            return Array.fromStream(r.lines());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Array.empty();
+    }
+
+    public BufferedReader createReader() {
+        if (deleted) return null;
+        try {
+            return new BufferedReader(new FileReader(handle));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static File of(String name) {
+        return new File(name);
+    }
+
+    public static File of(java.io.File file) {
+        return new File(file);
+    }
+
+    public static File of(Folder parent, String name) {
+        return new File(parent,name);
+    }
+
+    public void setContent(String content) {
+        if (deleted) return;
+        try (BufferedWriter w = Check.notNull(createWriter(),"buffered write of " + this)){
+            w.write(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setLines(Array<String> lines) {
+        setContent(lines.join("\n"));
+    }
+
+    public BufferedWriter createWriter() {
+        try {
+            return new BufferedWriter(new FileWriter(handle));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

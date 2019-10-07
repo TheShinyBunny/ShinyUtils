@@ -3,6 +3,7 @@ package com.shinybunny.utils.reflection;
 import com.sun.istack.internal.Nullable;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 public class ReflectedField {
 
@@ -19,6 +20,16 @@ public class ReflectedField {
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
+    }
+
+    public ReflectedField(ReflectedObject owner, ReflectedType ownerType, Field f) {
+        this.owner = owner;
+        this.ownerType = ownerType;
+        this.field = f;
+    }
+
+    public static ReflectedField of(Field f, Object owner) {
+        return new ReflectedField(new ReflectedObject(owner),ReflectedType.of(owner.getClass()),f);
     }
 
     public ReflectedField ensureType(ReflectedType type) {

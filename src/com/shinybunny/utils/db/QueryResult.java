@@ -10,15 +10,8 @@ public class QueryResult {
     private Array<ResultRow> rows;
     private int index;
 
-    public QueryResult(ResultSet res) {
-        rows = new Array<>();
-        try {
-            while (res.next()) {
-                rows.add(new ResultRow(res));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public QueryResult(Iterable<ResultRow> rows) {
+        this.rows = new Array<>(rows);
     }
 
     public Array<ResultRow> getRows() {

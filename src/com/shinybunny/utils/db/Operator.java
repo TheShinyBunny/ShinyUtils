@@ -31,4 +31,20 @@ public enum Operator {
             return String.format("%s %s %s",column,mySqlSign, DatabaseUtils.toString(value));
         }
     }
+
+    public String toRegex(Object value) {
+        if (format) {
+            switch (this) {
+                case CONTAINS:
+                    return ".*" + value + ".*";
+                case STARTS_WITH:
+                    return "^" + value + ".*";
+                case ENDS_WITH:
+                    return ".*" + value + "$";
+                case LIKE:
+                    return value.toString();
+            }
+        }
+        return null;
+    }
 }

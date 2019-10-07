@@ -41,8 +41,8 @@ public class MathUtils {
 
     public static double sum(double... d) {
         double r = 0;
-        for (int i = 0; i < d.length; i++) {
-            r += d[i];
+        for (double v : d) {
+            r += v;
         }
         return r;
     }

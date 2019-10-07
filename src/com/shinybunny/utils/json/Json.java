@@ -1,8 +1,11 @@
 package com.shinybunny.utils.json;
 
+import com.shinybunny.utils.Array;
+import com.shinybunny.utils.UtilsTest;
+
 import java.util.*;
 
-public class Json {
+public class Json implements Iterable<Map.Entry<String,Json>> {
 
 
     protected JsonHelper helper;
@@ -29,6 +32,10 @@ public class Json {
         return helper.from(obj);
     }
 
+    public static Json serialize(Object obj) {
+        return JsonHelper.DEFAULT_HELPER.serialize(obj);
+    }
+
     public Map<String, Json> getEntries() {
         return entries;
     }
@@ -38,25 +45,22 @@ public class Json {
     }
 
     public <T> T get(String path, JsonElementType<T> type) {
-        Optional<T> optionalT = helper.getByPath(path,this,false,type);
+        Optional<T> optionalT = getInternal(path,false,type);
         return optionalT.orElse(null);
     }
 
     public Optional<Json> getOptional(String path) {
-        return helper.getByPath(path,this,true,JsonElementType.ANY);
+        return getInternal(path,true,JsonElementType.ANY);
     }
 
     public <T> Optional<T> getOptional(String path, JsonElementType<T> type) {
-        return helper.getByPath(path,this,true,type);
+        return getInternal(path,true,type);
     }
 
     public <T> T get(String path, Class<T> type) {
         JsonElementType<?> elementType = JsonElementType.valueOf(type);
-        if (elementType == null) elementType = JsonElementType.OBJECT;
+        if (elementType == null) elementType = JsonElementType.ANY;
         Object t = get(path,elementType);
-        if (t instanceof Json) {
-            return helper.adapt((Json) t, type);
-        }
         return (T) t;
     }
 
@@ -127,12 +131,16 @@ public class Json {
 
     }
 
-    public void set(String path, Object value) {
-        set(path, value, false);
+    public Json set(String path, Object value) {
+        return set(path, value, false);
     }
 
-    public void set(String path, Object value, boolean force) {
-        helper.setPath(path,of(helper,value),this,force);
+    public Json set(String path, Object value, boolean force) {
+        return setInternal(path,of(helper,value),force);
+    }
+
+    public Json remove(String path) {
+        return set(path,null);
     }
 
     public boolean is(JsonElementType type) {
@@ -149,6 +157,10 @@ public class Json {
 
     @Override
     public String toString() {
+        return getType().toString(this,true);
+    }
+
+    public String toNormalString() {
         return getType().toString(this,false);
     }
 
@@ -192,20 +204,21 @@ public class Json {
         return entries.isEmpty();
     }
 
-    public Collection<Json> values() {
-        return new ArrayList<>(entries.values());
+    public Array<Json> values() {
+        return new Array<>(entries.values());
     }
 
     public <T> T to(JsonElementType<T> type) {
         if (type == JsonElementType.INT) return (T)(Integer)toInt();
         if (type == JsonElementType.DOUBLE) return (T)(Double)toDouble();
-        if (type == JsonElementType.STRING) return (T) toString();
+        if (type == JsonElementType.STRING) return (T) toNormalString();
         if (type == JsonElementType.BOOLEAN) return (T) (Boolean)toBoolean();
+        if (type == JsonElementType.ANY) return (T) getValue();
         return (T)this;
     }
 
     public Object getValue() {
-        return entries;
+        return this;
     }
 
     public Set<String> keys() {
@@ -221,6 +234,152 @@ public class Json {
     }
 
     public void addAll(Json json) {
-        addAll(entries);
+        addAll(json.entries);
+    }
+
+    /**
+     * Returns an iterator over elements of type {@code T}.
+     *
+     * @return an Iterator.
+     */
+    @Override
+    public Iterator<Map.Entry<String, Json>> iterator() {
+        return entries.entrySet().iterator();
+    }
+
+    public boolean isPrimitive() {
+        return false;
+    }
+
+    public void replaceAllWith(Json other) {
+        this.entries = new HashMap<>(other.entries);
+    }
+
+
+    protected void onEntryChanged(String key, Json value) {
+
+    }
+
+    private <T> Optional<T> getInternal(String path, boolean optional, JsonElementType<T> type) {
+        if (this instanceof JsonPrimitive || path.isEmpty()) {
+            return JsonHelper.ensureTypeOptional(this,optional,type);
+        }
+        if (path.startsWith("[")) {
+            if (this instanceof JsonArray) {
+                if (!path.contains("]")) throw JsonHelperException.ARRAY_INDEXER_NOT_CLOSED.create(path);
+                int closeIndex = path.indexOf(']');
+                String indexStr = path.substring(1,closeIndex);
+                try {
+                    int index = Integer.parseInt(indexStr);
+                    String rest = closeIndex > path.length() - 2 ? "" : path.substring(closeIndex + 2);
+                    JsonArray arr = (JsonArray)this;
+                    Json element = arr.get(index);
+                    if (element == null) {
+                        if (optional) return Optional.empty();
+                        throw JsonHelperException.ARRAY_INDEX_OUT_OF_BOUNDS.create(index, this);
+                    }
+                    return element.getInternal(rest,optional,type);
+                } catch (Exception e) {
+                    if (e instanceof JsonHelperException) throw e;
+                    throw JsonHelperException.INVALID_INDEX.create(path,indexStr);
+                }
+            } else {
+                throw JsonHelperException.ELEMENT_IS_NOT_ARRAY.create(this);
+            }
+        } else {
+            int index = keyEndIndex(path);
+            String key = path.substring(0,index);
+            Json element = entries.get(key);
+            String restOfPath = index == path.length() ? "" : path.substring(index + 1);
+            if (element == null) {
+                if (optional) {
+                    return Optional.empty();
+                }
+                throw JsonHelperException.UNKNOWN_KEY.create(key,this);
+            }
+            return element.getInternal(restOfPath,optional,type);
+        }
+    }
+
+    private Json setInternal(String path, Json value, boolean force) {
+        if (path.isEmpty()) return null;
+        if (this instanceof JsonPrimitive) {
+            throw JsonHelperException.ELEMENT_IS_NOT_OBJECT.create(this);
+        }
+        if (path.startsWith("[")) {
+            if (this instanceof JsonArray) {
+                if (!path.contains("]")) throw JsonHelperException.ARRAY_INDEXER_NOT_CLOSED.create(path);
+                int closeIndex = path.indexOf(']');
+                String indexStr = path.substring(1,closeIndex);
+                try {
+                    int index = Integer.parseInt(indexStr);
+                    String rest = closeIndex > path.length() - 2 ? "" : path.substring(closeIndex + 2);
+                    JsonArray arr = (JsonArray)this;
+                    Json element = arr.get(index);
+                    if (rest.isEmpty()) {
+                        Json prev = arr.set(index,value);
+                        onEntryChanged(index + "",value);
+                        return prev;
+                    } else {
+                        Json prev = element.setInternal(rest,value,force);
+                        onEntryChanged(index + "",value);
+                        return prev;
+                    }
+                } catch (Exception e) {
+                    if (e instanceof JsonHelperException) throw e;
+                    throw JsonHelperException.INVALID_INDEX.create(path,indexStr);
+                }
+            } else {
+                throw JsonHelperException.ELEMENT_IS_NOT_ARRAY.create(this);
+            }
+        } else {
+            int index = keyEndIndex(path);
+            String key = path.substring(0,index);
+            Json element = entries.get(key);
+            String restOfPath = index == path.length() ? "" : element == null || !element.isArray() ? path.substring(index + 1) : path.substring(index);
+            if (restOfPath.isEmpty()) {
+                Json prev;
+                if (value == null) {
+                    prev = entries.remove(key);
+                } else {
+                    prev = entries.put(key, value);
+                }
+                onEntryChanged(key, value);
+                return prev;
+            } else {
+                if (element == null) {
+                    if (force) {
+                        throw JsonHelperException.UNKNOWN_KEY.create(key, this);
+                    }
+                    return null;
+                }
+                Json prev = element.setInternal(restOfPath, value, force);
+                onEntryChanged(key, value);
+                return prev;
+            }
+        }
+    }
+
+    private int keyEndIndex(String path) {
+        int separator = path.indexOf(helper.pathSeparator);
+        int arrayIndexer = path.indexOf('[');
+        if (separator == path.length() - 1) {
+            throw JsonHelperException.PATH_SEPARATOR_LAST_CHAR.create(helper.pathSeparator, path);
+        }
+        if (arrayIndexer == path.length() - 1) {
+            throw JsonHelperException.ARRAY_INDEXER_NOT_CLOSED.create(path);
+        }
+        while (separator > 0 && path.charAt(separator - 1) == '\\') {
+            separator = path.indexOf(helper.pathSeparator, separator);
+        }
+        int index = separator < 0 ? arrayIndexer : arrayIndexer < 0 ? separator : arrayIndexer;
+        if (index <= 0) {
+            index = path.length();
+        }
+        return index;
+    }
+
+    public <T> T deserialize(Class<T> type) {
+        return helper.adapt(this,type);
     }
 }

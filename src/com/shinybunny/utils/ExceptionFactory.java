@@ -156,7 +156,7 @@ public class ExceptionFactory {
             if (converters.containsKey(arg)) {
                 return converters.get(arg).apply(value);
             }
-            return value.toString();
+            return value.toString().replaceAll("\\$","\\\\\\$");
         }
 
         @Override
